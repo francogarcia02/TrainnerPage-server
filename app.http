@@ -1,0 +1,9 @@
+### Send Mail
+POST http://localhost:3000/send-email
+Content-Type: application/json
+
+{
+    "nombre": "aaa",
+    "email": "aaa",
+    "mensaje": "aaa"
+}
