@@ -1,4 +1,3 @@
-// Importa las dependencias necesarias
 import express from 'express';
 import { google } from 'googleapis';
 import fs from 'fs';
@@ -8,11 +7,12 @@ import PDFDocument from 'pdfkit';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { MiddleWare } from './middlewares/middlewre.js';
+import { config } from './config.js';
 
 // SDK de Mercado Pago
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 // Agrega credenciales
-const client = new MercadoPagoConfig({ accessToken: 'APP_USR-2936329131742683-022219-423d9178be840370725a3c67e8441f27-2282943743' });
+const client = new MercadoPagoConfig({ accessToken: config.mp_access });
 
 
 // Inicializa el servidor de Express
@@ -26,9 +26,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuración del cliente OAuth2
-const client_id = process.env.ID;
-const client_secret = process.env.SECRET;
-const refresh_token = process.env.REFRESH_TOKEN;
+const client_id = config.client_id
+const client_secret = config.client_secret
+const refresh_token = config.refresh_token
 
 // Configuración de OAuth2
 const oauth2Client = new google.auth.OAuth2(client_id, client_secret, 'http://localhost:3000/');

@@ -1,5 +1,10 @@
-const client_id = process.env.ID
-const client_secret = process.env.SECRET
-const refresh_token = process.env.REFRESH_TOKEN
+import dotenv from 'dotenv';
 
-export {client_id, client_secret, refresh_token}
+dotenv.config(); // Carga las variables de entorno desde .env
+
+export const config = {
+    client_id: process.env.ID,
+    client_secret: process.env.SECRET,
+    refresh_token: process.env.REFRESH_TOKEN,
+    mp_access: process.env.MP_ACCESS
+};
