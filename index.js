@@ -155,12 +155,6 @@ app.post('/create-preference', async (req, res) => {
           unit_price: price
         }
       ],
-      back_urls: {
-        success: `https://tu-sitio.com/Success/${title}`,  // URL a la que el usuario será redirigido si el pago fue exitoso
-        failure: 'https://tu-sitio.com/failure',  // URL si el pago falla
-        pending: 'https://tu-sitio.com/pending'   // URL si el pago queda pendiente
-      },
-      auto_return: 'approved' // Redirigir automáticamente si el pago es aprobado
     }
   })
   .then(data => res.send(data))
