@@ -4,9 +4,9 @@ const ACCEPTED_ORIGINS = [
     'http://localhost:4000',
     'http://localhost:3000',
     'http://localhost:8080',
-    'https://trainner-page-client.vercel.app/',
-    'https://trainner-page-client-francogarcia02-admins-projects.vercel.app/',
-    'https://trainner-page-client-git-main-francogarcia02-admins-projects.vercel.app/',
+    'https://trainner-page-client.vercel.app',
+    'https://trainner-page-client-francogarcia02-admins-projects.vercel.app',
+    'https://trainner-page-client-git-main-francogarcia02-admins-projects.vercel.app',
     /\.vercel\.app$/,
 ];
 
