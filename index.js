@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { MiddleWare } from './middlewares/middleware.js';
 import { config } from './config.js';
+import { verificarPago } from './utils/verifyPay.js';
 
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 // Agrega credenciales
@@ -118,8 +119,31 @@ app.post('/send-email', upload.array('images', 5), async (req, res) => {
     }
 });
 
+app.post('/send-payment-confirmation', async (req, res) => {
+  try {
+      const subject = req.body.subject
+      const text = req.body.text;
+
+      const transporter = await createTransporter();
+
+      const mailOptions = {
+          from: 'manualbarracin.trainner@gmail.com',
+          to: 'manualbarracin.trainner@gmail.com',
+          subject: subject,
+          text: text
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+          if (error) return res.status(500).send(`Error al enviar el correo: ${error}`);
+          res.status(200).send(true);
+      });
+  } catch (error) {
+      res.status(500).send(`Error: ${error.message}`);
+  }
+});
+
 app.post('/create-preference', async (req, res) => {
-  const {price, title} = req.body
+  const { price, title } = req.body;
   const preference = new Preference(client);
 
   preference.create({
@@ -131,11 +155,25 @@ app.post('/create-preference', async (req, res) => {
           unit_price: price
         }
       ],
+      back_urls: {
+        success: `https://tu-sitio.com/Success/${title}`,  // URL a la que el usuario será redirigido si el pago fue exitoso
+        failure: 'https://tu-sitio.com/failure',  // URL si el pago falla
+        pending: 'https://tu-sitio.com/pending'   // URL si el pago queda pendiente
+      },
+      auto_return: 'approved' // Redirigir automáticamente si el pago es aprobado
     }
   })
-  .then(data=> res.send(data))
-  .catch(console.log);
+  .then(data => res.send(data))
+  .catch(error => {
+    console.error(error);
+    res.status(500).json({ error: 'Error al crear la preferencia' });
+  });
+});
 
+app.post('/verify-payment', async (req, res) => {
+  const {payment_id} = req.body
+  const data = verificarPago(payment_id, config.mp_access)
+  res.send(data)
 })
 
 
