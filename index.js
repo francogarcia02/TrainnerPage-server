@@ -8,8 +8,7 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { MiddleWare } from './middlewares/middlewre.js';
 import { config } from './config.js';
-console.log(config)
-// SDK de Mercado Pago
+
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 // Agrega credenciales
 const client = new MercadoPagoConfig({ accessToken: config.mp_access });
