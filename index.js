@@ -6,7 +6,7 @@ import nodemailer from 'nodemailer';
 import PDFDocument from 'pdfkit';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
-import { MiddleWare } from './middlewares/middlewre.js';
+import { MiddleWare } from './middlewares/middleware.js';
 import { config } from './config.js';
 
 import { MercadoPagoConfig, Preference } from 'mercadopago';
@@ -18,7 +18,6 @@ const client = new MercadoPagoConfig({ accessToken: config.mp_access });
 const app = express();
 app.use(express.json());
 const port = 4000;
-
 app.use(MiddleWare())
 
 const __filename = fileURLToPath(import.meta.url);
