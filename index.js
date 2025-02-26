@@ -156,7 +156,7 @@ app.post('/create-preference', async (req, res) => {
         }
       ],
       back_urls: {
-        success: `https://trainner-page-client.vercel.app/success/${title}`,  // URL a la que el usuario será redirigido si el pago fue exitoso
+        success: `https://trainner-page-client.vercel.app/success`,  // URL a la que el usuario será redirigido si el pago fue exitoso
         failure: 'https://trainner-page-client.vercel.app/failure',  // URL si el pago falla
         pending: 'https://trainner-page-client.vercel.app/pending'   // URL si el pago queda pendiente
       },
