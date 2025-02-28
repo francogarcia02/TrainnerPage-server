@@ -38,25 +38,33 @@ const generatePDF = (filePath, textLines) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
     const stream = fs.createWriteStream(filePath);
-    
+
     doc.pipe(stream);
     doc.font('Helvetica');
-    
+
     doc.fontSize(20).text('Información:', { align: 'center' });
     doc.moveDown();
 
-    // Iterar sobre cada línea
-    textLines.forEach(line => {
+    textLines.forEach((line, index) => {
+      if (index % 2 === 0) {
+        // Líneas pares: texto rojo y negrita
+        doc.fillColor('red').font('Helvetica-Bold');
+      } else {
+        // Líneas impares: texto negro y normal
+        doc.fillColor('black').font('Helvetica');
+      }
+
       doc.fontSize(14).text(line);
-      doc.moveDown(0.5); // Espaciado adecuado
+      doc.moveDown(0.5);
     });
 
     doc.end();
-    
+
     stream.on('finish', () => resolve());
     stream.on('error', (err) => reject(err));
   });
 };
+
 
 
 // Función para crear un transporter de Nodemailer
