@@ -48,10 +48,10 @@ const generatePDF = (filePath, textLines) => {
     textLines.forEach((line, index) => {
       if (index % 2 === 0) {
         // Líneas pares: texto rojo y negrita
-        doc.fillColor('red').font('Helvetica-Bold');
+        doc.fillColor('black').font('Helvetica');
       } else {
         // Líneas impares: texto negro y normal
-        doc.fillColor('black').font('Helvetica');
+        doc.fillColor('red').font('Helvetica-Bold');
       }
 
       doc.fontSize(14).text(line);
