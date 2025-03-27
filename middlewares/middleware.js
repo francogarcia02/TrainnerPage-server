@@ -7,9 +7,9 @@ const ACCEPTED_ORIGINS = [
     'https://trainner-page-client.vercel.app',
     'https://trainner-page-client-francogarcia02-admins-projects.vercel.app',
     'https://trainner-page-client-git-main-francogarcia02-admins-projects.vercel.app',
-    'https://manualbarracin-planes-manualbarracins-projects.vercel.app',
-    'https://manualbarracin-planes-git-main-manualbarracins-projects.vercel.app',
-    'https://manualbarracin-planes.vercel.app',
+    'https://manualbarracin-planes-musc.vercel.app',
+    'https://manualbarracin-planes-musc-manualbarracins-projects.vercel.app',
+    'https://manualbarracin-planes-musc-git-main-manualbarracins-projects.vercel.app',
     /\.vercel\.app$/,
 ];
 
