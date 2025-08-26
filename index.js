@@ -97,45 +97,43 @@ app.use(express.urlencoded({ extended: true })); // Para recibir el texto de For
 const upload = multer({ storage: multer.memoryStorage() }); // Manejo de imágenes en memoria
 
 app.post('/send-email', upload.array('images', 5), async (req, res) => {
-    try {
-        const subject = req.body.subject
-        const text = req.body.text; // Captura el texto del FormData
-        const pdfPath = path.join(__dirname, 'archivo.pdf');
-        await generatePDF(pdfPath, text);
+  try {
+    const subject = req.body.subject;
+    const text = req.body.text;
+    const pdfPath = path.join(__dirname, 'archivo.pdf');
 
-        const transporter = await createTransporter();
+    await generatePDF(pdfPath, text);
 
-        // Convertir imágenes en adjuntos
-        const attachments = req.files.map((file, index) => ({
-            filename: file.originalname || `image${index}.jpg`,
-            content: file.buffer,
-        }));
+    const transporter = await createTransporter();
 
-        // Agregar PDF como adjunto
-        attachments.push({ filename: 'archivo.pdf', path: pdfPath });
+    const attachments = req.files.map((file, index) => ({
+      filename: file.originalname || `image${index}.jpg`,
+      content: file.buffer,
+    }));
 
-        const mailOptions = {
-            from: 'manualbarracin.trainner@gmail.com',
-            to: 'manualbarracin.trainner@gmail.com',
-            subject: subject,
-            attachments: attachments,
-        };
+    // Usar buffer en vez de path (así podés borrar el archivo enseguida)
+    attachments.push({
+      filename: 'archivo.pdf',
+      content: fs.readFileSync(pdfPath),
+    });
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            fs.unlink(pdfPath, (err) => {
-                if (err) console.error('Error al eliminar el archivo:', err);
-                else console.log('Archivo PDF eliminado correctamente');
-            });
+    // Enviar correo con await
+    const info = await transporter.sendMail({
+      from: 'manualbarracin.trainner@gmail.com',
+      to: 'manualbarracin.trainner@gmail.com',
+      subject,
+      attachments,
+    });
 
-            if (error) {
-              return res.status(500).json({ success: false, message: `Error al enviar el correo: ${error.message}` });
-            }
-            res.status(200).json({ success: true });
-        });
-    } catch (error) {
-        console.error("❌ Error interno en /send-email:", error);
-        res.status(500).send(`Error: ${error.message}`);
-    }
+    // Borrar PDF
+    await fs.promises.unlink(pdfPath);
+    console.log('🗑️ Archivo PDF eliminado correctamente');
+
+    res.status(200).json({ success: true, info });
+  } catch (error) {
+    console.error('❌ Error en /send-email:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 app.post('/send-payment-confirmation', async (req, res) => {
