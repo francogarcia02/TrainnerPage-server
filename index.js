@@ -127,7 +127,7 @@ app.post('/send-email', upload.array('images', 5), async (req, res) => {
                 else console.log('Archivo PDF eliminado correctamente');
             });
 
-            if (error) return res.status(500).send(`Error al enviar el correo: ${JSON.stringify(error)}`);
+            if (error) return res.status(500).send(`Error al enviar el correo: ${error}`);
             res.status(200).send(true);
         });
     } catch (error) {
