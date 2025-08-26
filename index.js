@@ -76,18 +76,14 @@ const generatePDF = (filePath, textLines) => {
 
 
 // Función para crear un transporter de Nodemailer
-const createTransporter = async () => {
-  const { token } = await oauth2Client.getAccessToken();
-
+const createTransporter = () => {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,         // SSL
+    secure: true,      // obligatorio para puerto 465
     auth: {
-      type: 'OAuth2',
       user: 'manualbarracin.trainner@gmail.com',
-      clientId: client_id,
-      clientSecret: client_secret,
-      refreshToken: refresh_token,
-      accessToken: token,
+      pass: process.env.PASS,  // App Password desde variable de entorno
     },
   });
 };
