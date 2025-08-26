@@ -133,6 +133,7 @@ app.post('/send-email', upload.array('images', 5), async (req, res) => {
             res.status(200).json({ success: true });
         });
     } catch (error) {
+        console.error("❌ Error interno en /send-email:", error);
         res.status(500).send(`Error: ${error.message}`);
     }
 });
