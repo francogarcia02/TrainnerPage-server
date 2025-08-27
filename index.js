@@ -9,6 +9,8 @@ import multer from 'multer';
 import { MiddleWare } from './middlewares/middleware.js';
 import { config } from './config.js';
 import { verificarPago } from './utils/verifyPay.js';
+import formData from 'form-data';
+import Mailgun from 'mailgun.js';
 
 import { MercadoPagoConfig, Preference } from 'mercadopago';
 // Agrega credenciales
@@ -33,7 +35,10 @@ const refresh_token = config.refresh_token
 const oauth2Client = new google.auth.OAuth2(client_id, client_secret, 'http://localhost:3000/');
 oauth2Client.setCredentials({ refresh_token });
 
-// Función para generar un archivo PDF
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({ username: 'api', key: process.env.MAILGUN_API_KEY });
+
+// Función para generar PDF (igual que antes)
 const generatePDF = (filePath, textLines) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
@@ -41,18 +46,12 @@ const generatePDF = (filePath, textLines) => {
 
     doc.pipe(stream);
     doc.font('Helvetica');
-
     doc.fontSize(20).text('Información:', { align: 'center' });
     doc.moveDown();
 
     textLines.forEach((line, index) => {
-      if (index % 2 === 0) {
-        // Líneas pares: texto negro y normal
-        doc.fillColor('black').font('Helvetica');
-      } else {
-        // Líneas impares: texto rojo y negrita
-        doc.fillColor('red').font('Helvetica-Bold');
-      }
+      if (index % 2 === 0) doc.fillColor('black').font('Helvetica');
+      else doc.fillColor('red').font('Helvetica-Bold');
 
       doc.fontSize(14).text(line);
       doc.moveDown(0.5);
@@ -60,20 +59,10 @@ const generatePDF = (filePath, textLines) => {
 
     doc.end();
 
-    stream.on('finish', () => {
-      console.log(`✅ PDF generado correctamente en: ${filePath}`);
-      resolve();
-    });
-
-    stream.on('error', (err) => {
-      console.error(`❌ Error al generar PDF en: ${filePath}`, err);
-      reject(err);
-    });
+    stream.on('finish', resolve);
+    stream.on('error', reject);
   });
 };
-
-
-
 
 // Función para crear un transporter de Nodemailer
 const createTransporter = async () => {
@@ -97,67 +86,57 @@ app.use(express.urlencoded({ extended: true })); // Para recibir el texto de For
 const upload = multer({ storage: multer.memoryStorage() }); // Manejo de imágenes en memoria
 
 app.post('/send-email', upload.array('images', 5), async (req, res) => {
-    try {
-        const subject = req.body.subject
-        const text = req.body.text; // Captura el texto del FormData
-        const pdfPath = path.join(__dirname, 'archivo.pdf');
-        await generatePDF(pdfPath, text);
+  try {
+    const subject = req.body.subject;
+    const text = req.body.text;
+    const pdfPath = path.join(__dirname, 'archivo.pdf');
 
-        const transporter = await createTransporter();
+    await generatePDF(pdfPath, text);
 
-        // Convertir imágenes en adjuntos
-        const attachments = req.files.map((file, index) => ({
-            filename: file.originalname || `image${index}.jpg`,
-            content: file.buffer,
-        }));
+    const attachments = req.files.map(file => ({
+      filename: file.originalname,
+      data: file.buffer
+    }));
 
-        // Agregar PDF como adjunto
-        attachments.push({ filename: 'archivo.pdf', path: pdfPath });
+    attachments.push({
+      filename: 'archivo.pdf',
+      data: fs.readFileSync(pdfPath)
+    });
 
-        const mailOptions = {
-            from: 'manualbarracin.trainner@gmail.com',
-            to: 'manualbarracin.trainner@gmail.com',
-            subject: subject,
-            attachments: attachments,
-        };
+    await mg.messages.create(process.env.MAILGUN_DOMAIN, {
+      from: process.env.MAILGUN_FROM_EMAIL,
+      to: ["Manuel <manualbarracin.trainner@gmail.com>"],
+      subject,
+      text: 'Adjunto encontrarás los archivos.',
+      attachment: attachments
+    });
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            fs.unlink(pdfPath, (err) => {
-                if (err) console.error('Error al eliminar el archivo:', err);
-                else console.log('Archivo PDF eliminado correctamente');
-            });
+    await fs.promises.unlink(pdfPath);
+    console.log('🗑️ Archivo PDF eliminado correctamente');
 
-            if (error) {
-              return res.status(500).json({ success: false, message: `Error al enviar el correo: ${error.message}` });
-            }
-            res.status(200).json({ success: true });
-        });
-    } catch (error) {
-        console.error("❌ Error interno en /send-email:", error);
-        res.status(500).send(`Error: ${error.message}`);
-    }
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('❌ Error en /send-email:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 app.post('/send-payment-confirmation', async (req, res) => {
   try {
-      const subject = req.body.subject
-      const text = req.body.text;
+    const subject = req.body.subject;
+    const text = req.body.text;
 
-      const transporter = await createTransporter();
+    await mg.messages.create(process.env.MAILGUN_DOMAIN, {
+      from: process.env.MAILGUN_FROM_EMAIL,
+      to: 'manualbarracin.trainner@gmail.com',
+      subject,
+      text
+    });
 
-      const mailOptions = {
-          from: 'manualbarracin.trainner@gmail.com',
-          to: 'manualbarracin.trainner@gmail.com',
-          subject: subject,
-          text: text
-      };
-
-      transporter.sendMail(mailOptions, (error, info) => {
-          if (error) return res.status(500).send(`Error al enviar el correo: ${error}`);
-          res.status(200).send(true);
-      });
+    res.status(200).send(true);
   } catch (error) {
-      res.status(500).send(`Error: ${error.message}`);
+    console.error('❌ Error al enviar el correo de confirmación:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
