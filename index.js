@@ -128,7 +128,7 @@ app.post('/send-payment-confirmation', async (req, res) => {
 
     await mg.messages.create(process.env.MAILGUN_DOMAIN, {
       from: process.env.MAILGUN_FROM_EMAIL,
-      to: 'manualbarracin.trainner@gmail.com',
+      to: ["Manuel <manualbarracin.trainner@gmail.com>"],
       subject,
       text
     });
